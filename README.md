@@ -1,0 +1,1 @@
+This project is still under development. The aim is to make a fastfetch like tool that will print out stats about a given flake, with the goal of using it to generate the README of my own flake repo.
