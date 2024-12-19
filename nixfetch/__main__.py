@@ -1,21 +1,20 @@
 import argparse
 import json
+from pathlib import Path
 
 from .app import NixFetchApp
 
-if __name__ == "__main__":
-
+def run():
     parser = argparse.ArgumentParser()
-    parser.parse_args()
+    parser.add_argument('path',
+                        help="The path to the flake",
+                        type=Path)
 
-    metadata = None
-    showdata = None
+    args = parser.parse_args()
 
-    # Loading some sample data. Later this should be read form the flake using nix flake show and nix flake metadata
-    with open('./flake-metadata.json') as f:
-        metadata = json.load(f)
-    with open('./flake-show.json') as f:
-        showdata = json.load(f)
-
-    app = NixFetchApp(metadata, showdata)
+    app = NixFetchApp(args.path)
     app.display()
+
+if __name__ == "__main__":
+    run()
+
