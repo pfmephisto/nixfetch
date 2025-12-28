@@ -77,11 +77,11 @@ class ColorPaletteGenerator(ImageGenerator):
                         try:
                             font = ImageFont.truetype(font_path, 12)
                             break
-                        except:
+                        except (OSError, IOError):
                             continue
                     if font is None:
                         font = ImageFont.load_default()
-                except:
+                except Exception:
                     font = ImageFont.load_default()
                 
                 bbox = draw.textbbox((0, 0), text, font=font)
@@ -92,7 +92,8 @@ class ColorPaletteGenerator(ImageGenerator):
                 text_y = y + (swatch_height - text_height) // 2
                 
                 draw.text((text_x, text_y), text, fill=text_color, font=font)
-            except:
+            except Exception:
+                # Skip this color swatch if any error occurs
                 pass
         
         output_path = self.output_dir / f"{name}.png"

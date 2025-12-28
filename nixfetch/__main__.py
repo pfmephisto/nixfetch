@@ -1,7 +1,7 @@
 import argparse
 from pathlib import Path
 
-from .app import NixFetchApp
+from .app import NixFetchApp, AppMode
 
 
 def run():
@@ -48,15 +48,15 @@ Examples:
     
     # Determine mode
     if args.readme:
-        mode = "readme"
+        mode = AppMode.README
     elif args.analyze:
-        mode = "analyze"
+        mode = AppMode.ANALYZE
     else:
-        mode = "display"
+        mode = AppMode.DISPLAY
 
     app = NixFetchApp(args.path, mode=mode)
     
-    if mode == "readme":
+    if mode == AppMode.README:
         app.generate_readme(args.output)
     else:
         app.run()

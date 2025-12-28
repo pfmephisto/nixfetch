@@ -1,6 +1,7 @@
 """
 An App that displays the nix flake stats
 """
+from enum import Enum
 from pathlib import Path
 
 from rich import print
@@ -27,11 +28,22 @@ from .config import NixFetchConfig
 console = Console()
 
 
+class AppMode(Enum):
+    """Application operating modes"""
+    DISPLAY = "display"
+    ANALYZE = "analyze"
+    README = "readme"
+
+
 class NixFetchApp:
 
-    def __init__(self, path: Path, mode: str = "display", config: NixFetchConfig | None = None):
+    def __init__(self, path: Path, mode: AppMode | str = AppMode.DISPLAY, config: NixFetchConfig | None = None):
         self.path = path
-        self.mode = mode
+        # Convert string to enum if necessary
+        if isinstance(mode, str):
+            self.mode = AppMode(mode)
+        else:
+            self.mode = mode
         self.config = config or NixFetchConfig.from_flake(path)
         self.metadata = nix_metadata(str(path))
         self.showdata = nix_flake_show(str(path))
@@ -49,11 +61,11 @@ class NixFetchApp:
 
     def run(self):
         """Run the app in the configured mode"""
-        if self.mode == "display":
+        if self.mode == AppMode.DISPLAY:
             self.display()
-        elif self.mode == "readme":
+        elif self.mode == AppMode.README:
             self.generate_readme()
-        elif self.mode == "analyze":
+        elif self.mode == AppMode.ANALYZE:
             self.analyze_and_display()
         else:
             raise ValueError(f"Unknown mode: {self.mode}")

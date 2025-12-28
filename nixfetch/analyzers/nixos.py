@@ -22,7 +22,7 @@ class NixOSAnalyzer(Analyzer):
             from ..nix import nix_flake_show
             show_data = nix_flake_show(str(self.flake_path))
             return "nixosConfigurations" in show_data and len(show_data["nixosConfigurations"]) > 0
-        except:
+        except Exception:
             return False
     
     def analyze(self) -> AnalyzerResult:
@@ -67,7 +67,7 @@ class NixOSAnalyzer(Analyzer):
             proc = run(cmd, RunOpts(check=False))
             if proc.returncode == 0:
                 host_info["system"] = json.loads(proc.stdout)
-        except:
+        except Exception:
             pass
         
         try:
@@ -80,7 +80,7 @@ class NixOSAnalyzer(Analyzer):
             proc = run(cmd, RunOpts(check=False))
             if proc.returncode == 0:
                 host_info["hostname"] = json.loads(proc.stdout)
-        except:
+        except Exception:
             pass
         
         return host_info

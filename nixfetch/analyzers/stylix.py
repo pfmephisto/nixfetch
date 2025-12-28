@@ -23,7 +23,7 @@ class StylixAnalyzer(Analyzer):
             metadata = nix_metadata(str(self.flake_path))
             inputs = metadata.get("locks", {}).get("nodes", {})
             return "stylix" in inputs
-        except:
+        except Exception:
             return False
     
     def analyze(self) -> AnalyzerResult:
@@ -74,7 +74,7 @@ class StylixAnalyzer(Analyzer):
                             if f"base{i:02X}" in scheme
                         }
                     }
-        except:
+        except Exception:
             pass
         
         # Try to get wallpaper
@@ -89,7 +89,7 @@ class StylixAnalyzer(Analyzer):
                 wallpaper = json.loads(proc.stdout)
                 if wallpaper and isinstance(wallpaper, str):
                     theme_info["wallpaper"] = wallpaper
-        except:
+        except Exception:
             pass
         
         # Try to get fonts
@@ -104,7 +104,7 @@ class StylixAnalyzer(Analyzer):
                 font = json.loads(proc.stdout)
                 if font:
                     theme_info["font"] = font
-        except:
+        except Exception:
             pass
         
         return theme_info if theme_info else None

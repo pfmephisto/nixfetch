@@ -127,7 +127,9 @@ class ReadmeGenerator:
             lines.append("### Development Shells\n")
             for system, shells in dev_shells.items():
                 if shells:
-                    shell_names = ', '.join(f'`{s.get("name", "unknown")}`' for s in shells if s.get("name"))
+                    # Filter shells with valid names
+                    valid_shells = [s for s in shells if s.get("name")]
+                    shell_names = ', '.join(f'`{s["name"]}`' for s in valid_shells)
                     if shell_names:
                         lines.append(f"**{system}:** {shell_names}")
         
