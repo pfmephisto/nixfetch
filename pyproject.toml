@@ -1,16 +1,18 @@
 [tool.poetry]
 name = "nixfetch"
 version = "0.1.0"
-description = ""
-authors = ["Author Name <author@example.com>"]
+description = "A fastfetch-like tool for Nix flakes that generates beautiful documentation"
+authors = ["Povl Filip Sonne-Frederiksen"]
 readme = "README.md"
 license = "MIT"
-packages = [
-  { include = "rich" }
-]
 
 [tool.poetry.dependencies]
 python = "^3.10"
+rich = "^13.0.0"
+pillow = { version = "^10.0.0", optional = true }
+
+[tool.poetry.extras]
+images = ["pillow"]
 
 [build-system]
 requires = ["poetry-core"]
@@ -23,9 +25,10 @@ requires-python = ">=3.10"
 readme = "README.md"
 license = "MIT"
 dependencies = [
-    "rich"
-    ]
-keywords = ["nix", "flake", "stats"]
+    "rich>=13.0.0",
+]
+optional-dependencies = { images = ["pillow>=10.0.0"] }
+keywords = ["nix", "flake", "stats", "documentation", "readme"]
 authors = [
   {name = "Povl Filip Sonne-Frederiksen"}
 ]
