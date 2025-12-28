@@ -46,23 +46,41 @@ class ColorPaletteGenerator(ImageGenerator):
             
             # Draw color swatch
             try:
-                color_hex = f"#{color_value}" if not color_value.startswith("#") else color_value
+                # Ensure color_value doesn't have # prefix
+                color_hex = color_value.lstrip('#')
+                if len(color_hex) != 6:
+                    continue  # Skip invalid colors
+                
                 draw.rectangle(
                     [x, y, x + swatch_width, y + swatch_height],
-                    fill=color_hex,
+                    fill=f"#{color_hex}",
                     outline='black'
                 )
                 
                 # Add label (use contrasting color)
                 # Simple heuristic: use white text for dark colors, black for light
-                rgb = tuple(int(color_value[i:i+2], 16) for i in (0, 2, 4))
+                rgb = tuple(int(color_hex[i:i+2], 16) for i in (0, 2, 4))
                 brightness = sum(rgb) / 3
                 text_color = 'white' if brightness < 128 else 'black'
                 
                 # Draw text in center
                 text = color_name
                 try:
-                    font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 12)
+                    # Try multiple font paths for cross-platform compatibility
+                    font_paths = [
+                        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+                        "/System/Library/Fonts/Helvetica.ttc",  # macOS
+                        "C:\\Windows\\Fonts\\arial.ttf",  # Windows
+                    ]
+                    font = None
+                    for font_path in font_paths:
+                        try:
+                            font = ImageFont.truetype(font_path, 12)
+                            break
+                        except:
+                            continue
+                    if font is None:
+                        font = ImageFont.load_default()
                 except:
                     font = ImageFont.load_default()
                 

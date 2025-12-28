@@ -60,13 +60,22 @@ class NixFetchApp:
 
     def display(self):
         """Display flake info in terminal (original behavior)"""
+        description = self.metadata.get('description', 'No description')
+        last_modified = self.metadata.get('lastModified')
+        
+        if last_modified:
+            last_mod_str = datetime.utcfromtimestamp(int(last_modified)).isoformat()
+        else:
+            last_mod_str = 'Unknown'
+        
         title_text = Text(
-            f"{self.metadata['description']}\n"
-            f"Last modified: {datetime.utcfromtimestamp(int(self.metadata['lastModified']))}"
+            f"{description}\n"
+            f"Last modified: {last_mod_str}"
         )
 
+        locks_nodes = self.metadata.get('locks', {}).get('nodes', {})
         inputs = Panel(
-            '\n'.join(map(str, [f'{k}' for k, v in self.metadata['locks']['nodes'].items()])),
+            '\n'.join(map(str, [f'{k}' for k, v in locks_nodes.items()])),
             title="Inputs"
         )
         outputs = Panel(

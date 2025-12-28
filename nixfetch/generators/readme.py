@@ -127,7 +127,9 @@ class ReadmeGenerator:
             lines.append("### Development Shells\n")
             for system, shells in dev_shells.items():
                 if shells:
-                    lines.append(f"**{system}:** {', '.join(f'`{s.get('name')}`' for s in shells)}")
+                    shell_names = ', '.join(f'`{s.get("name", "unknown")}`' for s in shells if s.get("name"))
+                    if shell_names:
+                        lines.append(f"**{system}:** {shell_names}")
         
         # NixOS Configurations
         nixos_configs = data.get("nixosConfigurations", {})
