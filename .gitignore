@@ -164,3 +164,4 @@ cython_debug/
 # nixfetch generated files
 assets/
 nixfetch.json
+.envrc

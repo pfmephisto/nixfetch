@@ -1,31 +1,90 @@
 {
   description = "Like fastfetch but for nix flakes";
 
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-  inputs.poetry2nix.url = "github:nix-community/poetry2nix";
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
-  outputs = { self, nixpkgs, poetry2nix }:
-    let
-      supportedSystems = [ "x86_64-linux" "x86_64-darwin" "aarch64-linux" "aarch64-darwin" ];
-      forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
-      pkgs = forAllSystems (system: nixpkgs.legacyPackages.${system});
-    in
-    {
-      packages = forAllSystems (system: let
-        inherit (poetry2nix.lib.mkPoetry2Nix { pkgs = pkgs.${system}; }) mkPoetryApplication;
-      in {
-        default = mkPoetryApplication { projectDir = self; };
-      });
-
-      devShells = forAllSystems (system: let
-        inherit (poetry2nix.lib.mkPoetry2Nix { pkgs = pkgs.${system}; }) mkPoetryEnv;
-      in {
-        default = pkgs.${system}.mkShellNoCC {
-          packages = with pkgs.${system}; [
-            (mkPoetryEnv { projectDir = self; })
-            poetry
-          ];
-        };
-      });
+    pyproject-nix = {
+      url = "github:pyproject-nix/pyproject.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    uv2nix = {
+      url = "github:pyproject-nix/uv2nix";
+      inputs.pyproject-nix.follows = "pyproject-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    pyproject-build-systems = {
+      url = "github:pyproject-nix/build-system-pkgs";
+      inputs.pyproject-nix.follows = "pyproject-nix";
+      inputs.uv2nix.follows = "uv2nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
+
+  outputs = {
+    nixpkgs,
+    pyproject-nix,
+    uv2nix,
+    pyproject-build-systems,
+    ...
+  }: let
+    inherit (nixpkgs) lib;
+    forAllSystems = lib.genAttrs lib.systems.flakeExposed;
+
+    workspace = uv2nix.lib.workspace.loadWorkspace {workspaceRoot = ./.;};
+
+    overlay = workspace.mkPyprojectOverlay {
+      sourcePreference = "wheel";
+    };
+
+    editableOverlay = workspace.mkEditablePyprojectOverlay {
+      root = "$REPO_ROOT";
+    };
+
+    pythonSets = forAllSystems (
+      system: let
+        pkgs = nixpkgs.legacyPackages.${system};
+        python = pkgs.python3;
+      in
+        (pkgs.callPackage pyproject-nix.build.packages {
+          inherit python;
+        }).overrideScope
+        (
+          lib.composeManyExtensions [
+            pyproject-build-systems.overlays.wheel
+            overlay
+          ]
+        )
+    );
+  in {
+    devShells = forAllSystems (
+      system: let
+        pkgs = nixpkgs.legacyPackages.${system};
+        pythonSet = pythonSets.${system}.overrideScope editableOverlay;
+        virtualenv = pythonSet.mkVirtualEnv "nixfetch (dev)" workspace.deps.all;
+      in {
+        default = pkgs.mkShell {
+          packages = [
+            virtualenv
+            pkgs.uv
+          ];
+          env = {
+            UV_NO_SYNC = "1";
+            UV_PYTHON = pythonSet.python.interpreter;
+            UV_PYTHON_DOWNLOADS = "never";
+          };
+          shellHook = ''
+            unset PYTHONPATH
+            export REPO_ROOT=$(git rev-parse --show-toplevel)
+          '';
+        };
+      }
+    );
+
+    packages = forAllSystems (system: {
+      default = pythonSets.${system}.mkVirtualEnv "nixfetch" workspace.deps.default;
+    });
+  };
 }
