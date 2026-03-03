@@ -1,0 +1,15 @@
+{
+  "enable_metadata": true,
+  "enable_outputs": true,
+  "enable_nixos": true,
+  "enable_stylix": true,
+  "readme_template": null,
+  "generate_images": true,
+  "image_format": "png",
+  "color_scheme": "auto",
+  "show_errors": true,
+  "custom_sections": {
+    "contributing": "## Contributing\n\nContributions are welcome! Please feel free to submit a Pull Request.",
+    "license": "## License\n\nThis project is licensed under the MIT License."
+  }
+}
