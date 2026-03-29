@@ -61,7 +61,10 @@
   in {
     devShells = forAllSystems (
       system: let
-        pkgs = nixpkgs.legacyPackages.${system};
+        pkgs = import nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+        };
         pythonSet = pythonSets.${system}.overrideScope editableOverlay;
         virtualenv = pythonSet.mkVirtualEnv "nixfetch (dev)" workspace.deps.all;
       in {
@@ -69,6 +72,7 @@
           packages = [
             virtualenv
             pkgs.uv
+            pkgs.claude-code
           ];
           env = {
             UV_NO_SYNC = "1";

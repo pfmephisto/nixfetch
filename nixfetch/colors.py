@@ -1,6 +1,10 @@
 from enum import Enum
 from typing import Any
 
+# Nix brand colors
+NIX_BLUE = "#7EBAE4"
+NIX_DARK_BLUE = "#5277C3"
+
 ANSI16_MARKER = 300
 ANSI256_MARKER = 301
 DEFAULT_MARKER = 302

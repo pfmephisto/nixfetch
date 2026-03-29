@@ -7,14 +7,15 @@ from pathlib import Path
 from rich import print
 from rich.console import Console, Group
 from rich.panel import Panel
-from rich.columns import Columns
 from rich.text import Text
 from rich.table import Table
 from rich.markdown import Markdown
 
 from datetime import datetime
 
+from .fetch_display import FetchDisplay
 from .nix import nix_flake_show, nix_metadata
+from .nix_eval import eval_host_details
 from .analyzers import (
     MetadataAnalyzer,
     OutputsAnalyzer,
@@ -71,32 +72,9 @@ class NixFetchApp:
             raise ValueError(f"Unknown mode: {self.mode}")
 
     def display(self):
-        """Display flake info in terminal (original behavior)"""
-        description = self.metadata.get('description', 'No description')
-        last_modified = self.metadata.get('lastModified')
-        
-        if last_modified:
-            last_mod_str = datetime.utcfromtimestamp(int(last_modified)).isoformat()
-        else:
-            last_mod_str = 'Unknown'
-        
-        title_text = Text(
-            f"{description}\n"
-            f"Last modified: {last_mod_str}"
-        )
-
-        locks_nodes = self.metadata.get('locks', {}).get('nodes', {})
-        inputs = Panel(
-            '\n'.join(map(str, [f'{k}' for k, v in locks_nodes.items()])),
-            title="Inputs"
-        )
-        outputs = Panel(
-            '\n'.join(map(str, [f'{k}' for k, v in self.showdata.items()])),
-            title="Outputs"
-        )
-        columns = Columns([inputs, outputs])
-        console.print(title_text)
-        console.print(columns)
+        """Display flake info in neofetch-style terminal output"""
+        host_details = eval_host_details(str(self.path))
+        FetchDisplay(self.metadata, self.showdata, console, self.path, host_details).render()
 
     def analyze_and_display(self):
         """Run analyzers and display detailed results"""
